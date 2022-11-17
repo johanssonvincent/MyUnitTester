@@ -39,7 +39,6 @@ public class Test1 implements TestClass {
 		myInt=null;
 		myInt.decrement();
 		return true;
-		
 	}
 	
 	//Test that should fail
@@ -47,6 +46,4 @@ public class Test1 implements TestClass {
 		return false;
 		
 	}
-
-
 }
