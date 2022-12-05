@@ -17,4 +17,7 @@ public class MyInt {
 		return val;
 	}
 
+	public interface TestClass {
+
+	}
 }

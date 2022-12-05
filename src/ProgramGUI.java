@@ -1,12 +1,11 @@
 /**
  * @author Vincent Johansson (dv14vjn@cs.umu.se]
- * @since 2022-11-10
+ * @since 2022-11-21
  */
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -16,12 +15,18 @@ import java.util.concurrent.ExecutionException;
  */
 public class ProgramGUI extends JFrame{
 
+    /* Variable declarations */
     public JTextField textInput;
     public JTextArea textOutput;
+    public JFrame window;
+    public JButton clearOutput;
+    public JButton runInput;
     public enum ButtonType {RunButton, ClearButton};
 
+    /**
+     * ProgramGUI constructor
+     */
     public ProgramGUI() {
-        JFrame window;
         window = setupMainWindow();
 
         /* Add input box and run button */
@@ -38,10 +43,15 @@ public class ProgramGUI extends JFrame{
         /* Add button to clear output text */
         JPanel bottomPanel = createBottomPanel();
         window.add(bottomPanel, BorderLayout.SOUTH);
+        window.pack();
 
         window.setVisible(true);
     }
 
+    /**
+     * Setup for the main window JFrame
+     * @return  window JFrame
+     */
     protected JFrame setupMainWindow() {
         JFrame window = new JFrame("MyUnitTester");
         /* Window setup */
@@ -52,13 +62,17 @@ public class ProgramGUI extends JFrame{
         return window;
     }
 
+    /**
+     * Setup for the top JPanel
+     * @return  topPanel JPanel
+     */
     protected JPanel createTopPanel() {
         JPanel topPanel = new JPanel();
         /* Panel setup */
         topPanel.setLayout(new FlowLayout());
         textInput = new JTextField(20);
         topPanel.add(textInput);
-        JButton runInput = new JButton("Run test");
+        runInput = new JButton("Run test");
         topPanel.add(runInput);
 
         /* Setup listener */
@@ -68,11 +82,15 @@ public class ProgramGUI extends JFrame{
         return topPanel;
     }
 
+    /**
+     * Setup for the bottom JPanel
+     * @return  bottomPanel JPanel
+     */
     protected JPanel createBottomPanel() {
         JPanel bottomPanel = new JPanel();
         /* Panel setup */
         bottomPanel.setLayout(new FlowLayout());
-        JButton clearOutput = new JButton("Clear");
+        clearOutput = new JButton("Clear");
         bottomPanel.add(clearOutput);
 
         ActionListener clearButton = new ButtonListener(ButtonType.ClearButton);
@@ -81,6 +99,11 @@ public class ProgramGUI extends JFrame{
         return bottomPanel;
     }
 
+    /**
+     * ButtonListener class
+     * Local class for the ProgramGUI, implements ActionListener and
+     * Overrides actionPerformed to customize action on different button clicks
+     */
     class ButtonListener implements ActionListener {
 
         private final ButtonType type;
@@ -94,21 +117,23 @@ public class ProgramGUI extends JFrame{
         public void actionPerformed(ActionEvent event) {
             switch (type) {
                 case RunButton -> {
-                    TestHandler testHandler = new TestHandler(textInput, textOutput);
-                    testHandler.execute();
+                    TestRunner testRunner = new TestRunner(textInput, textOutput);
+                    testRunner.execute();
                     try {
-                        results = testHandler.get();
-                    } catch (ExecutionException e) {
-                        throw new RuntimeException(e);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
+                        results = testRunner.get();
+                    } catch (ExecutionException | InterruptedException e) {
+                        SwingUtilities.invokeLater(()->{
+                            textOutput.append(e.getCause().getMessage());
+                        });
                     }
                     for (int i = 0; i < results.size(); i++) {
                         int finalI = i;
                         SwingUtilities.invokeLater(()->textOutput.append(results.get(finalI)+"\n"));
                     }
                 }
-                case ClearButton -> SwingUtilities.invokeLater(()->textOutput.setText(""));
+                case ClearButton -> {
+                    SwingUtilities.invokeLater(()->textOutput.setText(""));
+                }
             }
         }
     }
